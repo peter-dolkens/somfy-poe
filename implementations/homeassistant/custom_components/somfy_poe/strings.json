@@ -1,0 +1,68 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Somfy PoE Motor Setup",
+        "description": "Choose how you want to set up your Somfy PoE motors.",
+        "data": {
+          "discovery_mode": "Setup method"
+        }
+      },
+      "discovery": {
+        "title": "Select Motor",
+        "description": "Found {count} motor(s). Select the motor you want to add.",
+        "data": {
+          "motor": "Motor"
+        }
+      },
+      "discovery_failed": {
+        "title": "No Motors Found",
+        "description": "Auto-discovery didn't find any Somfy PoE motors on your network. This could be because:\n\n• Motors are on a different network/VLAN\n• Multicast/mDNS is blocked by your router\n• Motors are not powered on\n\nWould you like to configure manually instead?",
+        "data": {
+          "try_manual": "Switch to manual configuration"
+        }
+      },
+      "manual": {
+        "title": "Manual Configuration",
+        "description": "Enter the IP address and PIN code for your Somfy PoE motor. The PIN is printed on the motor label.",
+        "data": {
+          "host": "IP Address",
+          "pin": "PIN Code (4 digits)"
+        }
+      },
+      "auth": {
+        "title": "Enter PIN Code",
+        "description": "Enter the 4-digit PIN code for {motor_name} at {ip_address}. The PIN is printed on the motor label.",
+        "data": {
+          "pin": "PIN Code"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Failed to connect to the motor. Check the IP address and ensure the motor is powered and accessible on your network.",
+      "invalid_auth": "Authentication failed. Check that the PIN code is correct.",
+      "unknown": "Unexpected error occurred"
+    },
+    "abort": {
+      "already_configured": "This motor is already configured",
+      "no_devices_found": "No Somfy PoE motors found on the network. Ensure motors are powered and connected to the same network.",
+      "invalid_discovery_info": "Invalid discovery information received"
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Somfy PoE Options",
+        "data": {
+          "update_interval": "Update interval (seconds)"
+        }
+      }
+    }
+  },
+  "services": {
+    "wink": {
+      "name": "Wink",
+      "description": "Make the motor jog briefly to identify which physical motor this is."
+    }
+  }
+}

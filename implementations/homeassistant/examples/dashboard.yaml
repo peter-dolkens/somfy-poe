@@ -1,0 +1,203 @@
+# Example Lovelace dashboard card for Somfy PoE motors
+# Add to your dashboard YAML or use the UI editor
+
+# Basic entities card
+type: entities
+title: Living Room Blinds
+entities:
+  - entity: cover.living_room_blind_1
+    name: Left Window
+  - entity: cover.living_room_blind_2
+    name: Right Window
+  - entity: cover.living_room_blind_3
+    name: Door
+
+---
+
+# Detailed card with attributes
+type: entities
+title: Bedroom Blind
+entities:
+  - entity: cover.bedroom_blind
+    type: custom:slider-entity-row
+    full_row: true
+  - type: section
+  - type: attribute
+    entity: cover.bedroom_blind
+    attribute: direction
+    name: Direction
+    icon: mdi:arrow-up-down
+  - type: attribute
+    entity: cover.bedroom_blind
+    attribute: status
+    name: Status
+    icon: mdi:information-outline
+  - type: attribute
+    entity: cover.bedroom_blind
+    attribute: firmware
+    name: Firmware
+    icon: mdi:chip
+
+---
+
+# Grid card with multiple blinds
+type: grid
+columns: 2
+square: false
+cards:
+  - type: tile
+    entity: cover.living_room_blind_1
+    name: Living Room Left
+    icon: mdi:blinds
+  - type: tile
+    entity: cover.living_room_blind_2
+    name: Living Room Right
+    icon: mdi:blinds
+  - type: tile
+    entity: cover.bedroom_blind
+    name: Bedroom
+    icon: mdi:blinds
+  - type: tile
+    entity: cover.office_blind
+    name: Office
+    icon: mdi:blinds
+
+---
+
+# Vertical stack with control buttons
+type: vertical-stack
+cards:
+  - type: entity
+    entity: cover.living_room_blind
+    name: Living Room Blind
+  - type: horizontal-stack
+    cards:
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.open_cover
+          target:
+            entity_id: cover.living_room_blind
+        name: Open
+        icon: mdi:arrow-up
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.stop_cover
+          target:
+            entity_id: cover.living_room_blind
+        name: Stop
+        icon: mdi:stop
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.close_cover
+          target:
+            entity_id: cover.living_room_blind
+        name: Close
+        icon: mdi:arrow-down
+  - type: horizontal-stack
+    cards:
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.set_cover_position
+          target:
+            entity_id: cover.living_room_blind
+          data:
+            position: 25
+        name: 25%
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.set_cover_position
+          target:
+            entity_id: cover.living_room_blind
+          data:
+            position: 50
+        name: 50%
+      - type: button
+        tap_action:
+          action: call-service
+          service: cover.set_cover_position
+          target:
+            entity_id: cover.living_room_blind
+          data:
+            position: 75
+        name: 75%
+
+---
+
+# Advanced card with status indicators
+type: vertical-stack
+cards:
+  - type: markdown
+    content: |
+      ## 🏠 All Blinds Status
+
+      {% set blinds = [
+        'cover.living_room_blind_1',
+        'cover.living_room_blind_2',
+        'cover.bedroom_blind'
+      ] %}
+
+      {% for blind in blinds %}
+      **{{ state_attr(blind, 'friendly_name') }}:**
+      - Position: {{ state_attr(blind, 'current_position') }}%
+      - Direction: {{ state_attr(blind, 'direction') }}
+      - Status: {{ state_attr(blind, 'status') }}
+      {% endfor %}
+  - type: entities
+    entities:
+      - type: button
+        name: Open All
+        icon: mdi:arrow-up-bold
+        tap_action:
+          action: call-service
+          service: cover.open_cover
+          target:
+            entity_id:
+              - cover.living_room_blind_1
+              - cover.living_room_blind_2
+              - cover.bedroom_blind
+      - type: button
+        name: Close All
+        icon: mdi:arrow-down-bold
+        tap_action:
+          action: call-service
+          service: cover.close_cover
+          target:
+            entity_id:
+              - cover.living_room_blind_1
+              - cover.living_room_blind_2
+              - cover.bedroom_blind
+
+---
+
+# Mushroom card (requires mushroom cards)
+type: custom:mushroom-cover-card
+entity: cover.living_room_blind
+name: Living Room
+show_position_control: true
+show_buttons_control: true
+
+---
+
+# Picture elements card (with custom image)
+type: picture-elements
+image: /local/images/living-room.jpg
+elements:
+  - type: state-icon
+    entity: cover.living_room_blind_1
+    tap_action:
+      action: toggle
+    style:
+      top: 30%
+      left: 20%
+  - type: state-icon
+    entity: cover.living_room_blind_2
+    tap_action:
+      action: toggle
+    style:
+      top: 30%
+      left: 80%

@@ -1,0 +1,9 @@
+{
+  "name": "Somfy PoE Motors",
+  "render_readme": true,
+  "domains": ["cover"],
+  "homeassistant": "2023.1.0",
+  "iot_class": "Local Polling",
+  "zip_release": true,
+  "filename": "somfy_poe.zip"
+}

@@ -1,0 +1,118 @@
+# ESPHome Configuration for Somfy PoE Motor Control
+# This example shows how to control Somfy PoE motors from ESPHome
+
+substitutions:
+  device_name: somfy-controller
+  friendly_name: Somfy PoE Controller
+  # Motor configuration - update these with your motor details
+  motor_ip: "192.168.1.150"
+  motor_pin: "1234"
+  motor_name: "Living Room Blind"
+
+esphome:
+  name: ${device_name}
+  includes:
+    - somfy_poe_component.h
+
+esp32:
+  board: esp32dev
+  framework:
+    type: arduino
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  # Enable fallback hotspot
+  ap:
+    ssid: "${friendly_name} Fallback"
+    password: !secret fallback_password
+
+captive_portal:
+
+# Configure the custom Somfy PoE component
+custom_component:
+  - lambda: |-
+      auto somfy = new SomfyPoeMotor("${motor_ip}", "${motor_pin}");
+      App.register_component(somfy);
+      return {somfy};
+
+# Cover entity for the blind
+cover:
+  - platform: template
+    name: "${motor_name}"
+    id: somfy_blind
+    device_class: blind
+    has_position: true
+
+    # Lambda functions to control the blind
+    open_action:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->move_up();
+
+    close_action:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->move_down();
+
+    stop_action:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->stop();
+
+    position_action:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->move_to_position(pos * 100.0f);  # Convert 0-1 to 0-100
+
+    optimistic: false
+
+# Sensors to monitor status
+sensor:
+  - platform: template
+    name: "${motor_name} Position"
+    id: blind_position
+    unit_of_measurement: "%"
+    accuracy_decimals: 1
+    update_interval: 5s
+    lambda: |-
+      auto somfy = (SomfyPoeMotor*)id(somfy_component);
+      return somfy->get_position();
+
+text_sensor:
+  - platform: template
+    name: "${motor_name} Status"
+    id: blind_status
+    update_interval: 5s
+    lambda: |-
+      auto somfy = (SomfyPoeMotor*)id(somfy_component);
+      return somfy->get_status();
+
+# Button entities for convenience
+button:
+  - platform: template
+    name: "${motor_name} Wink"
+    on_press:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->wink();
+
+  - platform: template
+    name: "${motor_name} Reconnect"
+    on_press:
+      - lambda: |-
+          auto somfy = (SomfyPoeMotor*)id(somfy_component);
+          somfy->reconnect();

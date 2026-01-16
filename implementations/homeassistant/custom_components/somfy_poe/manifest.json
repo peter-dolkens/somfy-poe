@@ -1,0 +1,13 @@
+{
+  "domain": "somfy_poe",
+  "name": "Somfy PoE Motors",
+  "codeowners": ["@custom"],
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://github.com/yourusername/somfy-poe",
+  "integration_type": "device",
+  "iot_class": "local_polling",
+  "requirements": ["zeroconf>=0.131.0", "pycryptodome>=3.19.0"],
+  "version": "1.0.0",
+  "zeroconf": ["_somfy-poe._tcp.local."]
+}

@@ -1,0 +1,227 @@
+# Example automations for Somfy PoE motors
+# Copy relevant automations to your Home Assistant automations.yaml
+
+# Close blinds at sunset
+- alias: "Somfy - Close at Sunset"
+  description: "Close all living room blinds at sunset"
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: "-00:30:00"  # 30 minutes before sunset
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          - cover.living_room_blind_1
+          - cover.living_room_blind_2
+
+# Open blinds at sunrise
+- alias: "Somfy - Open at Sunrise"
+  description: "Open bedroom blinds at sunrise"
+  trigger:
+    - platform: sun
+      event: sunrise
+      offset: "00:15:00"  # 15 minutes after sunrise
+  action:
+    - service: cover.open_cover
+      target:
+        entity_id: cover.bedroom_blind
+
+# Morning routine - partial open
+- alias: "Somfy - Morning Routine"
+  description: "Partially open blinds in the morning"
+  trigger:
+    - platform: time
+      at: "07:00:00"
+  condition:
+    - condition: state
+      entity_id: binary_sensor.workday
+      state: "on"
+  action:
+    - service: cover.set_cover_position
+      target:
+        entity_id:
+          - cover.bedroom_blind
+          - cover.kitchen_blind
+      data:
+        position: 60
+
+# Close when leaving home
+- alias: "Somfy - Close When Away"
+  description: "Close all blinds when everyone leaves"
+  trigger:
+    - platform: state
+      entity_id: zone.home
+      to: "0"  # Nobody home
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id: all
+
+# Open when arriving home in evening
+- alias: "Somfy - Open When Home Evening"
+  description: "Open blinds when arriving home after dark"
+  trigger:
+    - platform: state
+      entity_id: person.your_name
+      to: "home"
+  condition:
+    - condition: sun
+      after: sunset
+  action:
+    - service: cover.set_cover_position
+      target:
+        entity_id:
+          - cover.living_room_blind
+      data:
+        position: 40
+
+# Stop on obstacle detection
+- alias: "Somfy - Stop on Obstacle"
+  description: "Stop motor and notify if obstacle detected"
+  trigger:
+    - platform: state
+      entity_id:
+        - cover.living_room_blind
+        - cover.bedroom_blind
+      attribute: status
+      to: "obstacle"
+  action:
+    - service: cover.stop_cover
+      target:
+        entity_id: "{{ trigger.entity_id }}"
+    - service: notify.mobile_app
+      data:
+        title: "Blind Obstacle Detected"
+        message: "{{ state_attr(trigger.entity_id, 'friendly_name') }} detected an obstacle and stopped."
+        data:
+          priority: high
+
+# Temperature-based automation
+- alias: "Somfy - Close on Hot Day"
+  description: "Close south-facing blinds when it gets hot"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.outdoor_temperature
+      above: 28  # degrees
+  condition:
+    - condition: time
+      after: "12:00:00"
+      before: "18:00:00"
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          - cover.south_window_blind
+
+# Wind protection
+- alias: "Somfy - Close on High Wind"
+  description: "Close all blinds if wind speed is too high"
+  trigger:
+    - platform: numeric_state
+      entity_id: sensor.wind_speed
+      above: 40  # km/h
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id: all
+    - service: notify.mobile_app
+      data:
+        title: "High Wind Alert"
+        message: "Blinds closed due to high wind speed."
+
+# Weekly cleaning - full open
+- alias: "Somfy - Weekly Cleaning"
+  description: "Open all blinds fully on cleaning day"
+  trigger:
+    - platform: time
+      at: "09:00:00"
+  condition:
+    - condition: time
+      weekday:
+        - sat
+  action:
+    - service: cover.open_cover
+      target:
+        entity_id: all
+
+# Movie time
+- alias: "Somfy - Movie Mode"
+  description: "Close living room blinds for movie time"
+  trigger:
+    - platform: state
+      entity_id: media_player.living_room_tv
+      to: "playing"
+  condition:
+    - condition: sun
+      before: sunset
+      after: sunrise
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          - cover.living_room_blind_1
+          - cover.living_room_blind_2
+
+# Identify motor when button pressed
+- alias: "Somfy - Identify Button"
+  description: "Wink motor when button is pressed"
+  trigger:
+    - platform: state
+      entity_id: input_button.identify_blind
+  action:
+    - service: somfy_poe.wink
+      target:
+        entity_id: cover.{{ states('input_select.blind_selector') }}
+
+# Rain protection for outdoor blinds
+- alias: "Somfy - Close on Rain"
+  description: "Close outdoor blinds when it starts raining"
+  trigger:
+    - platform: state
+      entity_id: binary_sensor.rain_detected
+      to: "on"
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          - cover.patio_blind
+          - cover.deck_blind
+
+# Privacy mode at night
+- alias: "Somfy - Privacy Mode"
+  description: "Close bedroom blinds at night"
+  trigger:
+    - platform: time
+      at: "22:00:00"
+  action:
+    - service: cover.close_cover
+      target:
+        entity_id:
+          - cover.bedroom_blind
+          - cover.bathroom_blind
+
+# Wake up simulation
+- alias: "Somfy - Wake Up Simulation"
+  description: "Gradually open blinds before alarm"
+  trigger:
+    - platform: time
+      at: "06:30:00"
+  action:
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.bedroom_blind
+      data:
+        position: 20
+    - delay: "00:05:00"
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.bedroom_blind
+      data:
+        position: 40
+    - delay: "00:05:00"
+    - service: cover.set_cover_position
+      target:
+        entity_id: cover.bedroom_blind
+      data:
+        position: 60

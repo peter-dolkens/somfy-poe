@@ -1,0 +1,7 @@
+wink:
+  name: Wink
+  description: Make the motor jog briefly to identify which physical motor this is.
+  target:
+    entity:
+      integration: somfy_poe
+      domain: cover
